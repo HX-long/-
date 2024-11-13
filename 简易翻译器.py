@@ -1,6 +1,5 @@
 import json
 import re
-
 import requests
 import time
 import hashlib
@@ -26,6 +25,7 @@ def get_md5(val, is_hex=True):
 
 
 def translate():
+    global source_data, source_data_str
     result_str = []
     s = input_text.get("1.0", tk.END).strip()
     s_text = replace_punctuation_to_english(s)
@@ -98,20 +98,21 @@ def translate():
         iv = get_md5(n, is_hex=False)
         aes = AES.new(key, AES.MODE_CBC, iv)
         source_data = aes.decrypt(res_encrypt).decode()
-        if source_data is None:
-            print("source_data 为 None，无法进行清理操作，请检查数据来源。")
-            # 或者可以设置一个默认值，假设这里设置为空字符串
+        if source_data == "":
             source_data_str = ""
+            break
         else:
             source_data_str = source_data.rstrip(source_data[-1])
-
-        # print(source_data_str)
-        source_data_json = json.loads(source_data_str)
-        result = source_data_json['translateResult'][0][0]['tgt']
-        result_str.append(result)
-    result_str = "".join(result_str)
-    output_text.delete("1.0", tk.END)
-    output_text.insert(tk.END, result_str)
+            source_data_json = json.loads(source_data_str)
+            result = source_data_json['translateResult'][0][0]['tgt']
+            result_str.append(result)
+    if source_data_str == "":
+        output_text.delete("1.0", tk.END)
+        output_text.insert(tk.END, "输入框为空，请检查数据来源。")
+    else:
+        result_str = "".join(result_str)
+        output_text.delete("1.0", tk.END)
+        output_text.insert(tk.END, result_str)
 
 
 if __name__ == '__main__':
